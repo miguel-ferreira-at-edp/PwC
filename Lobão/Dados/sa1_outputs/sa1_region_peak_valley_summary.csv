@@ -1,0 +1,4 @@
+﻿Region,Peak_Month,Peak_Month_Name,Peak_Seasonality_Index,Peak_Revenue,Valley_Month,Valley_Month_Name,Valley_Seasonality_Index,Valley_Revenue,Seasonal_Amplitude_pts
+Asia,12,December,132.63529415949208,807335.2,5,May,81.58690993874744,496609.77999999997,51.04838422074464
+Europe,12,December,134.84630938133273,1691649.42,6,June,80.37505687259204,1008306.56,54.47125250874069
+North America,12,December,135.67030950694314,844994.69,5,May,78.82314691636668,490933.8,56.84716259057646

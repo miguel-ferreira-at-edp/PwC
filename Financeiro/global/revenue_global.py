@@ -15,7 +15,7 @@ OUTPUT_DIR = BASE_DIR  # gráficos guardados na mesma pasta
 
 # ── Load & prepare ─────────────────────────────────────────────────────────────
 df = pd.read_csv(DATA_PATH)
-df["Revenue"] = df["Sales_Price"] - df["Production_Cost"] - df["Shipping_Cost"]
+df["Revenue"] = df["Sales_Price"] 
 
 global_revenue = (
     df.groupby("Year")["Revenue"]

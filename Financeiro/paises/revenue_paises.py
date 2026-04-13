@@ -20,7 +20,7 @@ OUTPUT_DIR = BASE_DIR
 
 # ── Load & prepare ─────────────────────────────────────────────────────────────
 df = pd.read_csv(DATA_PATH)
-df["Revenue"] = df["Sales_Price"] - df["Production_Cost"] - df["Shipping_Cost"]
+df["Revenue"] = df["Sales_Price"]
 
 country_revenue = (
     df.groupby(["Year", "Region", "Country"])["Revenue"]

@@ -1,0 +1,83 @@
+SkiWell Sports
+Empresa de produção de produção e retalho(relacionados com ski)
+Especializada em arigos de desporto de inverno
+Localidade: fundada em Andorra em 2011
+
+Desenvolve-->Fabrica-->Comercializa
+
+Equipamento técnico, roupa, acessórios e material de proteção
+
+Durante os últimos 10 anos a empresa expandiu internacionalmente
+EU, North America, Asia
+
+Porque a SkiWell Sports contratou a PwC ???
+-->Analisar evolução rentabilidade
+-->identificar causas
+-->Comparar(discrepâncias) a performance entre mercados(localidades)-->cadeia de valor(duvida??!)/procura
+-->suportar tomada de decisão em cada uma das localidades
+
+Problema:
+Surgiram indícios que a rentabilidade global- pode ter diminuído
+**A empresa pretende avaliar se existe uma diminuição da rentabilidade**
+**identificar gaps de performance que possam justificar fechar a fabrica num determinado lugar**
+
+Grupo 1: 45%
+A empresa não possui um método de analise estruturada-->dificulta a capacidade da empresa de perceber a evolução da sua rentabilidade(resolver)
+
+Solicitou-se um relatório que contenha:
+-->Diagnóstico de Performance(localidades)
+
+Rentabilidade nos diferentes mercados(onde opera)
+
+-->Constrangimentos por países(Analise dos dados)
+
+-->Recomendações
+
+Que permitam mitigar os problemas encontrados
+
+KPI's OBRIGATÓRIOS NO RELATORIO:
+-->Rentabilidade por mercados
+-->Evolução dos lucros 
+-->Gastos dos fornecedores de transporte/expedição(provavelmente logística de fornecimento para armazéns, clientes, etc..)
+-->Gastos por de produção por categoria dos artigos
+
+Aqui vai ser a parte da analise de dados, vamos ter fazer mais ou menos aquilo que fizemos em SQL. Unir tables etc.. para podemos ter os dados numa tabela(criamos as nossas para analise, depois submetemos como dados auxiliares)
+
+DADOS CLIENTE:
+Ficheiros com informação:
+-->Vendas
+-->Custos
+Por localidades
+
+Grupo 2: 30%
+Integração com IA na sua cadeira de valor
+Maior pressão competitiva
+Volatilidade na procura-->sazonalidade(inverno)
+
+Digitalização(4.0), IA
+Soluções avançadas:
+-->previsão de procura(modelo???)
+-->otimização inteligente inventario(4.0, automatização, base de dados dinâmica)
+-->Automatizar processos logisticos
+
+Recomendações: 
+-->Na integração IA
+-->Areas prioritarias de aplicação IA
+-->De acordo com os constragimentos
+-->Elaborar uma matriz de priorização(esforço vs impacto)
+
+Ainda não li: Artigo de Suporte
+
+APRESENTAÇÃO:
+-->Assuntos chave
+-->Clara e precisa
+-->Comunicação-->Storytelling
+
+Regras:
+3 ficheiros Excel:
+-->Dados de vendas e custos-->2020-2025
+
+Sales Price: preço final de venda ao cliente(inclui tudo)
+
+Moeda: Euro
+

@@ -1,0 +1,15 @@
+feature,importance_mean,importance_std,model,target
+has_shipping_rate,1.7747659554516069,0.07082315603563963,shipping_model,shipping_ratio
+avg_delivery_days,0.005018265681018685,0.0012386144858008302,shipping_model,shipping_ratio
+Subcategory,0.000308873685565092,0.00027765092345977127,shipping_model,shipping_ratio
+orders_yoy_growth,0.0002190460850997833,0.0005943656477819094,shipping_model,shipping_ratio
+avg_sales_price,0.0001658359676294241,0.0006588645761848307,shipping_model,shipping_ratio
+Year,-3.3306690738754695e-17,5.087681048627601e-17,shipping_model,shipping_ratio
+unique_products,-0.00014626921171843055,0.0003033317474210866,shipping_model,shipping_ratio
+Quarter,-0.0003522217823051732,0.00019355866993297946,shipping_model,shipping_ratio
+Main_Category,-0.00039085683352043656,0.0001861032318373704,shipping_model,shipping_ratio
+Region,-0.00041386132401050046,0.0001438003405553431,shipping_model,shipping_ratio
+Country,-0.0004619454995364425,0.00024910523639373966,shipping_model,shipping_ratio
+top_product_revenue_share,-0.0008677664209144509,0.0005053259991189189,shipping_model,shipping_ratio
+orders,-0.0011752620787690681,0.000386850667233426,shipping_model,shipping_ratio
+avg_shop_age,-0.0019140747370820388,0.0005677975346086442,shipping_model,shipping_ratio

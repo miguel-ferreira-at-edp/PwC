@@ -1,0 +1,15 @@
+feature,importance_mean,importance_std,model,target
+has_shipping_rate,0.7330694892630197,0.02636684927376392,margin_model,profit_margin_pct
+avg_delivery_days,0.03188198222212568,0.015554244183974678,margin_model,profit_margin_pct
+Subcategory,0.005168557762952131,0.002180430516803613,margin_model,profit_margin_pct
+avg_shop_age,0.0012898880774991016,0.0058411124173071306,margin_model,profit_margin_pct
+Country,0.0007309313933902106,0.0020606541565321023,margin_model,profit_margin_pct
+unique_products,0.0003135109313100459,0.0023433790921865033,margin_model,profit_margin_pct
+Region,0.0002958810510251375,0.0008806292608871985,margin_model,profit_margin_pct
+Year,3.9968028886505636e-16,2.2315206618374915e-16,margin_model,profit_margin_pct
+Main_Category,-0.0007047352733311141,0.0007079989631557189,margin_model,profit_margin_pct
+orders_yoy_growth,-0.0011649813388352026,0.0029738503326874432,margin_model,profit_margin_pct
+top_product_revenue_share,-0.001913205651322214,0.0028198618444996867,margin_model,profit_margin_pct
+orders,-0.002123677447926353,0.002931957071818936,margin_model,profit_margin_pct
+Quarter,-0.0025307393511326713,0.0019039609461228206,margin_model,profit_margin_pct
+avg_sales_price,-0.0038054987534970387,0.002408018882193406,margin_model,profit_margin_pct

@@ -1,8 +1,10 @@
 """
-Revenue Global — evolução anual do revenue total (escala global).
+F07 — YoY Revenue Growth Global
+(Revenue_t − Revenue_t-1) / Revenue_t-1 × 100
+
 Gera 2 ficheiros:
-  revenue_global.png       → barras + linha de tendência
-  revenue_global_stats.png → tabela de estatísticas acumuladas
+  yoy_revenue_growth_global.png       → barras (positivo/negativo) + linha
+  yoy_revenue_growth_global_stats.png → tabela de estatísticas
 """
 
 import pandas as pd
@@ -19,79 +21,80 @@ OUTPUT_DIR = BASE_DIR
 df = pd.read_csv(DATA_PATH)
 df["Revenue"] = df["Sales_Price"]
 
-global_revenue = (
+annual = (
     df.groupby("Year")["Revenue"]
     .sum()
     .reset_index()
     .sort_values("Year")
 )
+annual["YoY"] = annual["Revenue"].pct_change() * 100
 
-rev = global_revenue["Revenue"]
-years = global_revenue["Year"].tolist()
-n_years = len(years)
+# Remove o primeiro ano (NaN)
+annual_yoy = annual.dropna(subset=["YoY"]).copy()
+years      = annual_yoy["Year"].tolist()
+yoy        = annual_yoy["YoY"]
 
 # ── Estatísticas ───────────────────────────────────────────────────────────────
-v0, vn = rev.iloc[0], rev.iloc[-1]
-cagr       = ((vn / v0) ** (1 / (n_years - 1)) - 1) * 100
-yoy        = rev.pct_change() * 100
-yoy_mean   = yoy.mean()
-yoy_best_i = yoy.idxmax()
-yoy_worst_i = yoy.idxmin()
-
 stats_rows = [
-    ("Revenue Total Acum.",  f"${rev.sum()/1e6:.1f}M"),
-    ("Média Anual",          f"${rev.mean()/1e6:.2f}M"),
-    ("CAGR",                 f"{cagr:.1f}%"),
-    ("Cresc. Médio YoY",     f"{yoy_mean:.1f}%"),
-    ("Melhor Ano (YoY)",     f"{years[yoy_best_i]} ({yoy.iloc[yoy_best_i]:+.1f}%)"),
-    ("Pior Ano (YoY)",       f"{years[yoy_worst_i]} ({yoy.iloc[yoy_worst_i]:+.1f}%)"),
-    ("Pico",                 f"${rev.max()/1e6:.1f}M  ({years[rev.argmax()]})"),
-    ("Mínimo",               f"${rev.min()/1e6:.1f}M  ({years[rev.argmin()]})"),
+    ("Cresc. Médio YoY",    f"{yoy.mean():+.1f}%"),
+    ("Melhor Ano",          f"{years[yoy.argmax()]} ({yoy.max():+.1f}%)"),
+    ("Pior Ano",            f"{years[yoy.argmin()]} ({yoy.min():+.1f}%)"),
+    ("Anos Positivos",      f"{(yoy > 0).sum()} de {len(yoy)}"),
+    ("Anos Negativos",      f"{(yoy < 0).sum()} de {len(yoy)}"),
+    ("Mediana YoY",         f"{yoy.median():+.1f}%"),
+    ("Desvio Padrão",       f"{yoy.std():.1f} pp"),
 ]
 
 # ────────────────────────────────────────────────────────────────────────────────
 # PNG 1 — Barras + Linha
 # ────────────────────────────────────────────────────────────────────────────────
+colors_bar = ["#2ca02c" if v >= 0 else "#d62728" for v in yoy]
+
 fig, ax = plt.subplots(figsize=(12, 6))
-fig.suptitle("Revenue Global — Evolução Anual (2020–2025)",
+fig.suptitle("YoY Revenue Growth Global — Evolução Anual (2021–2025)",
              fontsize=14, fontweight="bold")
 
 bars = ax.bar(
-    global_revenue["Year"],
-    global_revenue["Revenue"],
-    color="#1f77b4",
+    annual_yoy["Year"],
+    annual_yoy["YoY"],
+    color=colors_bar,
     alpha=0.75,
     width=0.5,
-    label="Revenue (barras)",
+    label="YoY Growth (barras)",
 )
 
 ax.plot(
-    global_revenue["Year"],
-    global_revenue["Revenue"],
+    annual_yoy["Year"],
+    annual_yoy["YoY"],
     marker="o",
-    color="#d62728",
+    color="#1f77b4",
     linewidth=2,
     label="Tendência (linha)",
 )
 
-for bar, val in zip(bars, global_revenue["Revenue"]):
+ax.axhline(0, color="#555555", linewidth=0.8, linestyle="--")
+
+for bar, val in zip(bars, annual_yoy["YoY"]):
+    offset = abs(yoy.max() - yoy.min()) * 0.02
+    va     = "bottom" if val >= 0 else "top"
+    y_pos  = val + offset if val >= 0 else val - offset
     ax.text(
         bar.get_x() + bar.get_width() / 2,
-        bar.get_height() + rev.max() * 0.01,
-        f"${val/1e6:.1f}M",
-        ha="center", va="bottom", fontsize=9,
+        y_pos,
+        f"{val:+.1f}%",
+        ha="center", va=va, fontsize=9,
     )
 
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"${x/1e6:.1f}M"))
+ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:+.1f}%"))
 ax.set_xlabel("Ano", fontsize=12)
-ax.set_ylabel("Revenue", fontsize=12)
-ax.set_xticks(global_revenue["Year"])
+ax.set_ylabel("YoY Revenue Growth (%)", fontsize=12)
+ax.set_xticks(annual_yoy["Year"])
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.18), ncol=2, fontsize=10)
 ax.grid(axis="y", linestyle="--", alpha=0.5)
-ax.margins(y=0.12)
+ax.margins(y=0.15)
 
 plt.tight_layout()
-p = os.path.join(OUTPUT_DIR, "revenue_global.png")
+p = os.path.join(OUTPUT_DIR, "yoy_revenue_growth_global.png")
 plt.savefig(p, dpi=150, bbox_inches="tight")
 print(f"Guardado: {p}")
 plt.close()
@@ -103,7 +106,7 @@ n_rows  = len(stats_rows)
 fig_h   = 1.0 + n_rows * 0.52 + 0.5
 fig, ax = plt.subplots(figsize=(7, fig_h))
 ax.axis("off")
-fig.suptitle("Estatísticas Acumuladas — Revenue Global",
+fig.suptitle("Estatísticas Acumuladas — YoY Revenue Growth Global",
              fontsize=13, fontweight="bold", y=0.97)
 
 cell_data  = [[v] for _, v in stats_rows]
@@ -122,7 +125,6 @@ tbl = ax.table(
 tbl.auto_set_font_size(False)
 tbl.set_fontsize(11)
 
-# Cabeçalho
 tbl[(0, 0)].set_facecolor("#1f77b4")
 tbl[(0, 0)].set_text_props(color="white", fontweight="bold")
 tbl[(0, 0)].set_edgecolor("#bbbbbb")
@@ -139,7 +141,7 @@ for i in range(n_rows):
     cell.set_height(0.11)
 
 plt.tight_layout()
-p = os.path.join(OUTPUT_DIR, "revenue_global_stats.png")
+p = os.path.join(OUTPUT_DIR, "yoy_revenue_growth_global_stats.png")
 plt.savefig(p, dpi=150, bbox_inches="tight")
 print(f"Guardado: {p}")
 plt.close()

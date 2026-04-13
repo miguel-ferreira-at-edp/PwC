@@ -1,5 +1,5 @@
 """
-Gross Profit por Continente/Região — evolução anual.
+Total Profit por Continente/Região — evolução anual.
 Gera 3 ficheiros separados:
   _abs.png   → Stacked Area volume absoluto
   _pct.png   → Stacked Area 100% (quota global)
@@ -18,11 +18,11 @@ OUTPUT_DIR = BASE_DIR
 
 # ── Load & prepare ─────────────────────────────────────────────────────────────
 df = pd.read_csv(DATA_PATH)
-# Gross Profit = Sales_Price - Production_Cost
-df["Gross_Profit"] = df["Sales_Price"] - df["Production_Cost"]
+# Total Profit = Sales_Price - Production_Cost - Shipping_Cost
+df["Total_Profit"] = df["Sales_Price"] - df["Production_Cost"] - df["Shipping_Cost"]
 
 region_data = (
-    df.groupby(["Year", "Region"])["Gross_Profit"]
+    df.groupby(["Year", "Region"])["Total_Profit"]
     .sum()
     .reset_index()
     .sort_values(["Year", "Region"])
@@ -30,7 +30,7 @@ region_data = (
 
 pivot = (
     region_data
-    .pivot(index="Year", columns="Region", values="Gross_Profit")
+    .pivot(index="Year", columns="Region", values="Total_Profit")
     .fillna(0)
 )
 
@@ -41,9 +41,9 @@ regions   = pivot.columns.tolist()
 n_years   = len(years)
 
 COLORS = {
-    "Asia":          "#4e9af1",
-    "Europe":        "#f4a02a",
-    "North America": "#3cba54",
+    "Asia":          "#1f77b4",
+    "Europe":        "#ff7f0e",
+    "North America": "#2ca02c",
 }
 LABELS = {
     "Asia":          "Ásia",
@@ -96,7 +96,7 @@ FONT_PCT_NORMAL = 9.0
 # ────────────────────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(14, 7))
 fig.suptitle(
-    "Gross Profit por Região — Evolução Anual (2020–2025)\nVolume Absoluto",
+    "Total Profit por Região — Evolução Anual (2020–2025)\nVolume Absoluto",
     fontsize=13, fontweight="bold",
 )
 
@@ -106,7 +106,7 @@ ax.set_xlim(years[0] - 0.3, years[-1] + 0.3)
 ax.set_xticks(years)
 ax.tick_params(axis="x", labelsize=11)
 ax.set_xlabel("Ano", fontsize=11)
-ax.set_ylabel("Gross Profit", fontsize=11)
+ax.set_ylabel("Total Profit", fontsize=11)
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22),
           ncol=3, fontsize=10, framealpha=0.85)
 ax.grid(axis="y", linestyle="--", alpha=0.35)
@@ -136,7 +136,7 @@ for region in regions:
                 fontsize=fs, color="black", fontweight="bold")
 
 plt.tight_layout()
-p = os.path.join(OUTPUT_DIR, "gross_profit_continentes_abs.png")
+p = os.path.join(OUTPUT_DIR, "total_profit_continentes_abs.png")
 plt.savefig(p, dpi=150, bbox_inches="tight")
 print(f"Guardado: {p}")
 plt.close()
@@ -146,7 +146,7 @@ plt.close()
 # ────────────────────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(14, 7))
 fig.suptitle(
-    "Gross Profit por Região — Evolução Anual (2020–2025)\nQuota Relativa Global — 100% Stacked",
+    "Total Profit por Região — Evolução Anual (2020–2025)\nQuota Relativa Global — 100% Stacked",
     fontsize=13, fontweight="bold",
 )
 
@@ -157,7 +157,7 @@ ax.set_xticks(years)
 ax.tick_params(axis="x", labelsize=11)
 ax.set_ylim(0, 110)
 ax.set_xlabel("Ano", fontsize=11)
-ax.set_ylabel("Quota de Gross Profit (%)", fontsize=11)
+ax.set_ylabel("Quota de Total Profit (%)", fontsize=11)
 ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22),
           ncol=3, fontsize=10, framealpha=0.85)
 ax.grid(axis="y", linestyle="--", alpha=0.35)
@@ -174,7 +174,7 @@ for region in regions:
                 fontsize=fs, color="black", fontweight="bold")
 
 plt.tight_layout()
-p = os.path.join(OUTPUT_DIR, "gross_profit_continentes_pct.png")
+p = os.path.join(OUTPUT_DIR, "total_profit_continentes_pct.png")
 plt.savefig(p, dpi=150, bbox_inches="tight")
 print(f"Guardado: {p}")
 plt.close()
@@ -183,7 +183,7 @@ plt.close()
 # PNG 3 — Tabela de estatísticas
 # ────────────────────────────────────────────────────────────────────────────────
 row_labels = [
-    "Gross Profit Total Acum.",
+    "Total Profit Acumulado",
     "Média Anual",
     "CAGR",
     "Cresc. Médio YoY",
@@ -203,7 +203,7 @@ n_rows = len(row_labels)
 fig_h  = 1.2 + n_rows * 0.55 + 0.6
 fig, ax = plt.subplots(figsize=(12, fig_h))
 ax.axis("off")
-fig.suptitle("Estatísticas Acumuladas — Gross Profit por Região", fontsize=13,
+fig.suptitle("Estatísticas Acumuladas — Total Profit por Região", fontsize=13,
              fontweight="bold", y=0.97)
 
 tbl = ax.table(
@@ -238,7 +238,7 @@ for i in range(n_rows):
         cell.set_height(0.12)
 
 plt.tight_layout()
-p = os.path.join(OUTPUT_DIR, "gross_profit_continentes_stats.png")
+p = os.path.join(OUTPUT_DIR, "total_profit_continentes_stats.png")
 plt.savefig(p, dpi=150, bbox_inches="tight")
 print(f"Guardado: {p}")
 plt.close()

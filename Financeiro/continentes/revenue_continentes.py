@@ -1,8 +1,9 @@
 """
 Revenue por Continente/Região — evolução anual.
-  - Stacked Area: volume absoluto + 100% stacked
-  - Anotações dentro das bandas ano a ano (sem sobreposição)
-  - Tabela de estatísticas num subplot dedicado e bem dimensionado
+Gera 3 ficheiros separados:
+  _abs.png   → Stacked Area volume absoluto
+  _pct.png   → Stacked Area 100% (quota global)
+  _stats.png → Tabela de estatísticas acumuladas
 """
 
 import pandas as pd
@@ -70,98 +71,118 @@ for r in regions:
         "min_val":  s.min(),
     }
 
-# ── Layout: 3 linhas — gráfico absoluto | gráfico % | tabela ──────────────────
-fig = plt.figure(figsize=(16, 17))
-fig.suptitle("Revenue por Região — Evolução Anual (2020–2025)",
-             fontsize=15, fontweight="bold", y=0.995)
-
-gs = fig.add_gridspec(
-    3, 1,
-    height_ratios=[4.5, 4.5, 3.0],
-    hspace=0.55,
-    top=0.96, bottom=0.03, left=0.07, right=0.97,
-)
-ax1      = fig.add_subplot(gs[0])
-ax2      = fig.add_subplot(gs[1])
-ax_table = fig.add_subplot(gs[2])
-ax_table.axis("off")
-
-vals   = [pivot[r].values for r in regions]
-colors = [COLORS[r] for r in regions]
-labels = [LABELS[r] for r in regions]
-
-# ── helpers ────────────────────────────────────────────────────────────────────
 total_per_year = pivot[regions].sum(axis=1)
 cumsum         = pivot[regions].cumsum(axis=1)
 pivot_pct      = pivot[regions].div(total_per_year, axis=0) * 100
 cumsum_pct     = pivot_pct.cumsum(axis=1)
 
-MIN_BAND_FRAC = 0.13   # só anota valor se a banda ocupa >13% do total
+vals     = [pivot[r].values   for r in regions]
+vals_pct = [pivot_pct[r].values for r in regions]
+colors   = [COLORS[r]         for r in regions]
+labels   = [LABELS[r]         for r in regions]
 
-# ── Subplot 1: Volume absoluto ─────────────────────────────────────────────────
-ax1.stackplot(years, vals, labels=labels, colors=colors, alpha=0.85)
-ax1.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"${v/1e6:.1f}M"))
-ax1.set_xlim(years[0], years[-1])
-ax1.set_xticks(years)
-ax1.tick_params(axis="x", labelsize=10)
-ax1.set_ylabel("Revenue", fontsize=11)
-ax1.set_title("Volume Absoluto — Contribuição por Região", fontsize=12, pad=8)
-ax1.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22),
-           ncol=3, fontsize=9, framealpha=0.85)
-ax1.grid(axis="y", linestyle="--", alpha=0.35)
-ax1.margins(y=0.12)   # espaço acima do topo para os totais
+MIN_FRAC     = 0.04
+FRAC_NORMAL  = 0.13
+FONT_SMALL   = 6.0
+FONT_NORMAL  = 8.5
+PCT_SMALL_MIN  = 4
+PCT_NORMAL     = 10
+FONT_PCT_SMALL  = 6.0
+FONT_PCT_NORMAL = 9.0
 
-# Total do stack: acima da área, rotacionado 45° para não colidir
+# ────────────────────────────────────────────────────────────────────────────────
+# PNG 1 — Volume Absoluto
+# ────────────────────────────────────────────────────────────────────────────────
+fig, ax = plt.subplots(figsize=(14, 7))
+fig.suptitle(
+    "Revenue por Região — Evolução Anual (2020–2025)\nVolume Absoluto",
+    fontsize=13, fontweight="bold",
+)
+
+ax.stackplot(years, vals, labels=labels, colors=colors, alpha=0.85)
+ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"${v/1e6:.1f}M"))
+ax.set_xlim(years[0] - 0.3, years[-1] + 0.3)
+ax.set_xticks(years)
+ax.tick_params(axis="x", labelsize=11)
+ax.set_xlabel("Ano", fontsize=11)
+ax.set_ylabel("Revenue", fontsize=11)
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22),
+          ncol=3, fontsize=10, framealpha=0.85)
+ax.grid(axis="y", linestyle="--", alpha=0.35)
+ax.margins(y=0.15)
+
+# Total no topo, ano a ano
 for yr, tot in zip(years, total_per_year):
-    ax1.text(
-        yr, tot * 1.025,
+    ax.annotate(
         f"${tot/1e6:.1f}M",
-        ha="center", va="bottom", fontsize=8,
-        color="#111111", fontweight="bold", rotation=0,
+        xy=(yr, tot),
+        xytext=(0, 10), textcoords="offset points",
+        ha="center", va="bottom",
+        fontsize=9, color="#111111", fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.2", facecolor="white",
+                  edgecolor="#cccccc", alpha=0.85),
     )
 
-# Valor dentro de cada banda
+# Valor dentro de cada banda, ano a ano
 for region in regions:
     for yr, tot_yr in zip(years, total_per_year):
-        val   = pivot[region].loc[yr]
+        val  = pivot[region].loc[yr]
+        frac = val / tot_yr
+        if frac < MIN_FRAC:
+            continue
         y_mid = cumsum[region].loc[yr] - val / 2
-        if val / tot_yr > MIN_BAND_FRAC:
-            ax1.text(
-                yr, y_mid,
-                f"${val/1e6:.1f}M",
+        fs = FONT_NORMAL if frac >= FRAC_NORMAL else FONT_SMALL
+        ax.text(yr, y_mid, f"${val/1e6:.1f}M",
                 ha="center", va="center",
-                fontsize=7.5, color="black", fontweight="bold",
-            )
+                fontsize=fs, color="black", fontweight="bold")
 
-# ── Subplot 2: 100% Stacked ────────────────────────────────────────────────────
-vals_pct = [pivot_pct[r].values for r in regions]
+plt.tight_layout()
+p = os.path.join(OUTPUT_DIR, "revenue_continentes_abs.png")
+plt.savefig(p, dpi=150, bbox_inches="tight")
+print(f"Guardado: {p}")
+plt.close()
 
-ax2.stackplot(years, vals_pct, labels=labels, colors=colors, alpha=0.85)
-ax2.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:.0f}%"))
-ax2.set_xlim(years[0], years[-1])
-ax2.set_xticks(years)
-ax2.tick_params(axis="x", labelsize=10)
-ax2.set_ylim(0, 110)
-ax2.set_xlabel("Ano", fontsize=11)
-ax2.set_ylabel("Quota de Revenue (%)", fontsize=11)
-ax2.set_title("Quota Relativa por Região — 100% Stacked", fontsize=12, pad=8)
-ax2.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22),
-           ncol=3, fontsize=9, framealpha=0.85)
-ax2.grid(axis="y", linestyle="--", alpha=0.35)
+# ────────────────────────────────────────────────────────────────────────────────
+# PNG 2 — Quota Relativa 100% Stacked
+# ────────────────────────────────────────────────────────────────────────────────
+fig, ax = plt.subplots(figsize=(14, 7))
+fig.suptitle(
+    "Revenue por Região — Evolução Anual (2020–2025)\nQuota Relativa Global — 100% Stacked",
+    fontsize=13, fontweight="bold",
+)
+
+ax.stackplot(years, vals_pct, labels=labels, colors=colors, alpha=0.85)
+ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"{v:.0f}%"))
+ax.set_xlim(years[0] - 0.3, years[-1] + 0.3)
+ax.set_xticks(years)
+ax.tick_params(axis="x", labelsize=11)
+ax.set_ylim(0, 110)
+ax.set_xlabel("Ano", fontsize=11)
+ax.set_ylabel("Quota de Revenue (%)", fontsize=11)
+ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22),
+          ncol=3, fontsize=10, framealpha=0.85)
+ax.grid(axis="y", linestyle="--", alpha=0.35)
 
 for region in regions:
     for yr in years:
-        pct   = pivot_pct[region].loc[yr]
+        pct = pivot_pct[region].loc[yr]
+        if pct < PCT_SMALL_MIN:
+            continue
         y_mid = cumsum_pct[region].loc[yr] - pct / 2
-        if pct > 10:
-            ax2.text(
-                yr, y_mid,
-                f"{pct:.1f}%",
+        fs = FONT_PCT_NORMAL if pct >= PCT_NORMAL else FONT_PCT_SMALL
+        ax.text(yr, y_mid, f"{pct:.1f}%",
                 ha="center", va="center",
-                fontsize=8, color="black", fontweight="bold",
-            )
+                fontsize=fs, color="black", fontweight="bold")
 
-# ── Tabela de estatísticas via matplotlib.table ────────────────────────────────
+plt.tight_layout()
+p = os.path.join(OUTPUT_DIR, "revenue_continentes_pct.png")
+plt.savefig(p, dpi=150, bbox_inches="tight")
+print(f"Guardado: {p}")
+plt.close()
+
+# ────────────────────────────────────────────────────────────────────────────────
+# PNG 3 — Tabela de estatísticas
+# ────────────────────────────────────────────────────────────────────────────────
 row_labels = [
     "Revenue Total Acum.",
     "Média Anual",
@@ -170,51 +191,55 @@ row_labels = [
     "Pico (ano)",
     "Mínimo (ano)",
 ]
-col_labels = [LABELS[r] for r in regions]
-
 cell_data = [
-    [f"${stats[r]['total']/1e6:.1f}M"                                    for r in regions],
-    [f"${stats[r]['media']/1e6:.2f}M"                                    for r in regions],
-    [f"{stats[r]['cagr']:.1f}%"                                          for r in regions],
-    [f"{stats[r]['yoy_mean']:.1f}%"                                      for r in regions],
-    [f"${stats[r]['pico_val']/1e6:.1f}M  ({stats[r]['pico_ano']})"       for r in regions],
-    [f"${stats[r]['min_val']/1e6:.1f}M  ({stats[r]['min_ano']})"         for r in regions],
+    [f"${stats[r]['total']/1e6:.1f}M"                                  for r in regions],
+    [f"${stats[r]['media']/1e6:.2f}M"                                  for r in regions],
+    [f"{stats[r]['cagr']:.1f}%"                                        for r in regions],
+    [f"{stats[r]['yoy_mean']:.1f}%"                                    for r in regions],
+    [f"${stats[r]['pico_val']/1e6:.1f}M  ({stats[r]['pico_ano']})"    for r in regions],
+    [f"${stats[r]['min_val']/1e6:.1f}M  ({stats[r]['min_ano']})"      for r in regions],
 ]
 
-tbl = ax_table.table(
+n_rows = len(row_labels)
+fig_h  = 1.2 + n_rows * 0.55 + 0.6
+fig, ax = plt.subplots(figsize=(12, fig_h))
+ax.axis("off")
+fig.suptitle("Estatísticas Acumuladas por Região", fontsize=13,
+             fontweight="bold", y=0.97)
+
+tbl = ax.table(
     cellText=cell_data,
     rowLabels=row_labels,
-    colLabels=col_labels,
+    colLabels=[LABELS[r] for r in regions],
     cellLoc="center",
     rowLoc="left",
     loc="center",
-    bbox=[0.0, 0.0, 1.0, 1.0],   # preenche o subplot por inteiro
+    bbox=[0.0, 0.0, 1.0, 0.92],
+    colWidths=[0.28] + [0.72 / len(regions)] * len(regions),
 )
 tbl.auto_set_font_size(False)
-tbl.set_fontsize(9.5)
+tbl.set_fontsize(10.5)
 
-# Estilo do cabeçalho de colunas
 for j, region in enumerate(regions):
     cell = tbl[(0, j)]
     cell.set_facecolor(COLORS[region])
     cell.set_text_props(color="white", fontweight="bold")
-    cell.set_edgecolor("#cccccc")
+    cell.set_edgecolor("#bbbbbb")
+    cell.set_height(0.14)
 
-# Estilo do cabeçalho de linhas + células
-for i in range(len(row_labels)):
-    # row header
-    tbl[(i + 1, -1)].set_facecolor("#f0f0f0")
+for i in range(n_rows):
+    tbl[(i + 1, -1)].set_facecolor("#e8e8e8")
     tbl[(i + 1, -1)].set_text_props(fontweight="bold")
-    tbl[(i + 1, -1)].set_edgecolor("#cccccc")
+    tbl[(i + 1, -1)].set_edgecolor("#bbbbbb")
+    tbl[(i + 1, -1)].set_height(0.12)
     for j in range(len(regions)):
         cell = tbl[(i + 1, j)]
-        cell.set_facecolor("#fafafa" if i % 2 == 0 else "#ffffff")
-        cell.set_edgecolor("#cccccc")
+        cell.set_facecolor("#f7f7f7" if i % 2 == 0 else "#ffffff")
+        cell.set_edgecolor("#bbbbbb")
+        cell.set_height(0.12)
 
-ax_table.set_title("Estatísticas Acumuladas por Região", fontsize=11,
-                   fontweight="bold", pad=6)
-
-out_path = os.path.join(OUTPUT_DIR, "revenue_continentes.png")
-plt.savefig(out_path, dpi=150, bbox_inches="tight")
-print(f"Gráfico guardado em: {out_path}")
-plt.show()
+plt.tight_layout()
+p = os.path.join(OUTPUT_DIR, "revenue_continentes_stats.png")
+plt.savefig(p, dpi=150, bbox_inches="tight")
+print(f"Guardado: {p}")
+plt.close()

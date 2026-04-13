@@ -1,5 +1,5 @@
 """
-Gross Profit por País — 3 regiões × 3 ficheiros cada:
+Total Profit por País — 3 regiões × 3 ficheiros cada:
   _abs.png   → Stacked Area volume absoluto
   _pct.png   → Stacked Area 100% (quota no continente)
   _stats.png → Tabela de estatísticas acumuladas
@@ -18,15 +18,15 @@ OUTPUT_DIR = BASE_DIR
 
 # ── Load & prepare ─────────────────────────────────────────────────────────────
 if not os.path.exists(DATA_PATH):
-    # Fallback para o caminho relativo antigo caso o absoluto falhe num ambiente diferente
+    # Fallback para o caminho relativo antigo caso o absoluto falhe
     DATA_PATH = os.path.join(BASE_DIR, "..", "..", "data", "sales_data_clean.csv")
 
 df = pd.read_csv(DATA_PATH)
-# Gross Profit = Sales_Price - Production_Cost
-df["Gross_Profit"] = df["Sales_Price"] - df["Production_Cost"]
+# Total Profit = Sales_Price - Production_Cost - Shipping_Cost
+df["Total_Profit"] = df["Sales_Price"] - df["Production_Cost"] - df["Shipping_Cost"]
 
 country_data = (
-    df.groupby(["Year", "Region", "Country"])["Gross_Profit"]
+    df.groupby(["Year", "Region", "Country"])["Total_Profit"]
     .sum()
     .reset_index()
     .sort_values(["Region", "Country", "Year"])
@@ -68,7 +68,7 @@ def plot_region(region_key: str, config: dict):
     years = sorted(data["Year"].unique())
 
     pivot = (
-        data.pivot_table(index="Year", columns="Country", values="Gross_Profit", aggfunc="sum")
+        data.pivot_table(index="Year", columns="Country", values="Total_Profit", aggfunc="sum")
         .reindex(columns=countries)
         .fillna(0)
     )
@@ -112,7 +112,7 @@ def plot_region(region_key: str, config: dict):
     # ────────────────────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(14, 7))
     fig.suptitle(
-        f"Gross Profit por País — {label} (2020–2025)\nVolume Absoluto — Parcela do Continente",
+        f"Total Profit por País — {label} (2020–2025)\nVolume Absoluto — Parcela do Continente",
         fontsize=13, fontweight="bold",
     )
 
@@ -124,7 +124,7 @@ def plot_region(region_key: str, config: dict):
     ax.set_xticks(years)
     ax.tick_params(axis="x", labelsize=11)
     ax.set_xlabel("Ano", fontsize=11)
-    ax.set_ylabel("Gross Profit", fontsize=11)
+    ax.set_ylabel("Total Profit", fontsize=11)
     ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.22),
               ncol=min(n_cols, 4), fontsize=10, title="País", framealpha=0.85)
     ax.grid(axis="y", linestyle="--", alpha=0.35)
@@ -158,7 +158,7 @@ def plot_region(region_key: str, config: dict):
             )
 
     plt.tight_layout()
-    p = os.path.join(OUTPUT_DIR, f"gross_profit_paises_{slug}_abs.png")
+    p = os.path.join(OUTPUT_DIR, f"total_profit_paises_{slug}_abs.png")
     plt.savefig(p, dpi=150, bbox_inches="tight")
     print(f"Guardado: {p}")
     plt.close()
@@ -168,7 +168,7 @@ def plot_region(region_key: str, config: dict):
     # ────────────────────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(14, 7))
     fig.suptitle(
-        f"Gross Profit por País — {label} (2020–2025)\nQuota Relativa no Continente — 100% Stacked",
+        f"Total Profit por País — {label} (2020–2025)\nQuota Relativa no Continente — 100% Stacked",
         fontsize=13, fontweight="bold",
     )
 
@@ -201,7 +201,7 @@ def plot_region(region_key: str, config: dict):
             )
 
     plt.tight_layout()
-    p = os.path.join(OUTPUT_DIR, f"gross_profit_paises_{slug}_pct.png")
+    p = os.path.join(OUTPUT_DIR, f"total_profit_paises_{slug}_pct.png")
     plt.savefig(p, dpi=150, bbox_inches="tight")
     print(f"Guardado: {p}")
     plt.close()
@@ -210,7 +210,7 @@ def plot_region(region_key: str, config: dict):
     # PNG 3 — Tabela de estatísticas
     # ────────────────────────────────────────────────────────────────────────────
     row_labels = [
-        "Gross Profit Total Acum.",
+        "Total Profit Acumulado",
         "Média Anual",
         "CAGR",
         "Cresc. Médio YoY",
@@ -231,7 +231,7 @@ def plot_region(region_key: str, config: dict):
     fig, ax = plt.subplots(figsize=(max(8, 3.5 * n_cols + 3), fig_h))
     ax.axis("off")
     fig.suptitle(
-        f"Estatísticas Acumuladas — {label} (Gross Profit)",
+        f"Estatísticas Acumuladas — {label} (Total Profit)",
         fontsize=13, fontweight="bold", y=0.97,
     )
 
@@ -270,7 +270,7 @@ def plot_region(region_key: str, config: dict):
             cell.set_height(0.12)
 
     plt.tight_layout()
-    p = os.path.join(OUTPUT_DIR, f"gross_profit_paises_{slug}_stats.png")
+    p = os.path.join(OUTPUT_DIR, f"total_profit_paises_{slug}_stats.png")
     plt.savefig(p, dpi=150, bbox_inches="tight")
     print(f"Guardado: {p}")
     plt.close()
